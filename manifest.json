@@ -3,6 +3,9 @@
   "name": "Facebook Ad Blocker",
   "version": "1.0.0",
   "description": "Silently hides Facebook feed ads.",
+  "icons": {
+    "128": "icon.png"
+  },
   "content_scripts": [
     {
       "matches": ["https://www.facebook.com/*"],
