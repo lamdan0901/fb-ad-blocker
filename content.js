@@ -59,11 +59,11 @@ hideSponsoredRail(document);
 
 new MutationObserver((mutations) => {
   for (const mutation of mutations) {
-    for (const node of mutation.addedNodes) {
-      if (node instanceof Element) {
-        hideFeedPosts(node);
-        hideSponsoredRail(node);
-      }
-    }
+    const root =
+      mutation.type === "characterData" ? mutation.target.parentElement : mutation.target;
+
+    if (!root) continue;
+    hideFeedPosts(root);
+    hideSponsoredRail(root);
   }
-}).observe(document, { childList: true, subtree: true });
+}).observe(document, { childList: true, characterData: true, subtree: true });
