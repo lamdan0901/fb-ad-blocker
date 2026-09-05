@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Facebook Ad Blocker",
+  "version": "1.0.0",
+  "description": "Silently hides Facebook feed ads.",
+  "content_scripts": [
+    {
+      "matches": ["https://www.facebook.com/*"],
+      "css": ["hide.css"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

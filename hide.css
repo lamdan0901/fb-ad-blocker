@@ -1,0 +1,5 @@
+div[aria-posinset]:has([data-ad-rendering-role="cta-"]),
+div[aria-posinset]:has(a[href^="/ads/about/"]),
+.fb-ad-blocker-hidden {
+  display: none !important;
+}
