@@ -1,0 +1,29 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>WAIT</title>
+<script>history.replaceState(null, "", "/");</script>
+<script src="/content.js"></script>
+
+<div id="late-child" aria-posinset="1">
+  <h4><div role="button"><span></span></div></h4>
+</div>
+<div id="late-character" aria-posinset="2">
+  <h4><div role="button"><span>Pending</span></div></h4>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.querySelector("#late-child span").textContent = "Follow";
+    document.querySelector("#late-character span").firstChild.data = "Join";
+
+    setTimeout(() => {
+      const passed = ["late-child", "late-character"].every((id) =>
+        document.getElementById(id).classList.contains("fb-ad-blocker-hidden"),
+      );
+
+      document.documentElement.dataset.result = passed ? "pass" : "fail";
+      document.title = passed ? "PASS" : "FAIL";
+      if (!passed) throw new Error("Late feed labels were not detected");
+    });
+  });
+</script>
