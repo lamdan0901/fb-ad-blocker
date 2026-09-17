@@ -1,6 +1,7 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Facebook Ad Hider test</title>
+<title>WAIT</title>
+<script>history.replaceState(null, "", "/");</script>
 
 <div id="suggested" aria-posinset="1"><span>Suggested for you</span></div>
 <div id="normal" aria-posinset="2">
@@ -14,16 +15,19 @@
   <div><button aria-label="Open menu for Acme sponsored content"></button></div>
 </div>
 <div id="ordinary-section"><h3>Sponsored</h3></div>
+<div id="late-child" aria-posinset="8">
+  <h4><div role="button"><span></span></div></h4>
+</div>
+<div id="late-character" aria-posinset="9">
+  <h4><div role="button"><span>Pending</span></div></h4>
+</div>
 
-<script src="../content.js"></script>
+<script src="/content.js"></script>
 <script>
-  hideFeedPosts(document, "/");
-
   const offHomepage = document.createElement("div");
-  offHomepage.id = "off-homepage";
   offHomepage.setAttribute("aria-posinset", "6");
   offHomepage.innerHTML = '<h4><div role="button"><span>Join</span></div></h4>';
-  document.body.append(offHomepage);
+  // Keep this detached so the homepage observer cannot reclassify it.
   hideFeedPosts(offHomepage, "/groups/example");
 
   const dynamic = document.createElement("div");
@@ -33,26 +37,23 @@
   document.body.append(dynamic);
 
   setTimeout(() => {
-    const suggested = document.getElementById("suggested");
-    const normal = document.getElementById("normal");
-    const group = document.getElementById("group");
-    const page = document.getElementById("page");
-    const bodyButton = document.getElementById("body-button");
-    const rightRail = document.getElementById("right-rail");
-    const ordinarySection = document.getElementById("ordinary-section");
-    const passed =
-      suggested.classList.contains("fb-ad-blocker-hidden") &&
-      !normal.classList.contains("fb-ad-blocker-hidden") &&
-      group.classList.contains("fb-ad-blocker-hidden") &&
-      page.classList.contains("fb-ad-blocker-hidden") &&
-      !bodyButton.classList.contains("fb-ad-blocker-hidden") &&
-      !offHomepage.classList.contains("fb-ad-blocker-hidden") &&
-      dynamic.classList.contains("fb-ad-blocker-hidden") &&
-      rightRail.classList.contains("fb-ad-blocker-hidden") &&
-      !ordinarySection.classList.contains("fb-ad-blocker-hidden");
+    document.querySelector("#late-child span").textContent = "Follow";
+    document.querySelector("#late-character span").firstChild.data = "Join";
 
-    document.documentElement.dataset.result = passed ? "pass" : "fail";
-    document.title = passed ? "PASS" : "FAIL";
-    if (!passed) throw new Error("Post detection failed");
+    setTimeout(() => {
+      const expected = {
+        suggested: true, normal: false, group: true, page: true,
+        "body-button": false, "right-rail": true, "ordinary-section": false,
+        dynamic: true, "late-child": true, "late-character": true,
+      };
+      const failures = Object.entries(expected)
+        .filter(([id, hidden]) => document.getElementById(id).classList.contains("fb-ad-blocker-hidden") !== hidden)
+        .map(([id]) => id);
+      if (offHomepage.classList.contains("fb-ad-blocker-hidden")) failures.push("off-homepage");
+
+      document.documentElement.dataset.result = failures.length ? "fail" : "pass";
+      document.title = failures.length ? `FAIL: ${failures.join(", ")}` : "PASS";
+      if (failures.length) throw new Error(document.title);
+    });
   });
 </script>
