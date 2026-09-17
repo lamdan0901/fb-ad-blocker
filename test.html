@@ -1,29 +1,58 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>WAIT</title>
-<script>history.replaceState(null, "", "/");</script>
-<script src="/content.js"></script>
+<title>Facebook Ad Hider test</title>
 
-<div id="late-child" aria-posinset="1">
-  <h4><div role="button"><span></span></div></h4>
+<div id="suggested" aria-posinset="1"><span>Suggested for you</span></div>
+<div id="normal" aria-posinset="2">
+  <div data-ad-rendering-role="story_message"><span>Suggested for you</span></div>
 </div>
-<div id="late-character" aria-posinset="2">
-  <h4><div role="button"><span>Pending</span></div></h4>
+<div id="group" aria-posinset="3"><h4><div role="button"><span>Join</span></div></h4></div>
+<div id="page" aria-posinset="4"><h4><div role="button"><span>Follow</span></div></h4></div>
+<div id="body-button" aria-posinset="5"><div role="button"><span>Follow</span></div></div>
+<div id="right-rail">
+  <h3>Sponsored&#x200b;</h3>
+  <div><button aria-label="Open menu for Acme sponsored content"></button></div>
 </div>
+<div id="ordinary-section"><h3>Sponsored</h3></div>
 
+<script src="../content.js"></script>
 <script>
+  hideFeedPosts(document, "/");
+
+  const offHomepage = document.createElement("div");
+  offHomepage.id = "off-homepage";
+  offHomepage.setAttribute("aria-posinset", "6");
+  offHomepage.innerHTML = '<h4><div role="button"><span>Join</span></div></h4>';
+  document.body.append(offHomepage);
+  hideFeedPosts(offHomepage, "/groups/example");
+
+  const dynamic = document.createElement("div");
+  dynamic.id = "dynamic";
+  dynamic.setAttribute("aria-posinset", "7");
+  dynamic.innerHTML = "<span>Suggested for you</span>";
+  document.body.append(dynamic);
+
   setTimeout(() => {
-    document.querySelector("#late-child span").textContent = "Follow";
-    document.querySelector("#late-character span").firstChild.data = "Join";
+    const suggested = document.getElementById("suggested");
+    const normal = document.getElementById("normal");
+    const group = document.getElementById("group");
+    const page = document.getElementById("page");
+    const bodyButton = document.getElementById("body-button");
+    const rightRail = document.getElementById("right-rail");
+    const ordinarySection = document.getElementById("ordinary-section");
+    const passed =
+      suggested.classList.contains("fb-ad-blocker-hidden") &&
+      !normal.classList.contains("fb-ad-blocker-hidden") &&
+      group.classList.contains("fb-ad-blocker-hidden") &&
+      page.classList.contains("fb-ad-blocker-hidden") &&
+      !bodyButton.classList.contains("fb-ad-blocker-hidden") &&
+      !offHomepage.classList.contains("fb-ad-blocker-hidden") &&
+      dynamic.classList.contains("fb-ad-blocker-hidden") &&
+      rightRail.classList.contains("fb-ad-blocker-hidden") &&
+      !ordinarySection.classList.contains("fb-ad-blocker-hidden");
 
-    setTimeout(() => {
-      const passed = ["late-child", "late-character"].every((id) =>
-        document.getElementById(id).classList.contains("fb-ad-blocker-hidden"),
-      );
-
-      document.documentElement.dataset.result = passed ? "pass" : "fail";
-      document.title = passed ? "PASS" : "FAIL";
-      if (!passed) throw new Error("Late feed labels were not detected");
-    });
+    document.documentElement.dataset.result = passed ? "pass" : "fail";
+    document.title = passed ? "PASS" : "FAIL";
+    if (!passed) throw new Error("Post detection failed");
   });
 </script>

@@ -1,6 +1,7 @@
 const POST_SELECTOR = "div[aria-posinset]";
 const HIDDEN_CLASS = "fb-ad-blocker-hidden";
 const SPONSORED_MENU_SELECTOR = '[aria-label$=" sponsored content"]';
+const observedLabels = new WeakSet();
 
 function hideFeedPosts(root, pathname = location.pathname) {
   const posts = new Set(root.querySelectorAll(POST_SELECTOR));
@@ -13,6 +14,21 @@ function hideFeedPosts(root, pathname = location.pathname) {
   for (const post of posts) {
     if (post.classList.contains(HIDDEN_CLASS)) continue;
 
+    const isSponsored = [...post.querySelectorAll('a[role="link"][target="_blank"] [aria-labelledby] > span')].some(
+      (host) => {
+        if (host.closest("[data-ad-rendering-role]")) return false;
+        // Closed ad labels are readable through Chrome's extension-only DOM API.
+        const shadow = globalThis.chrome?.dom?.openOrClosedShadowRoot(host);
+        if (!shadow) return false;
+        if (!observedLabels.has(shadow)) {
+          new MutationObserver(() => hideFeedPosts(host)).observe(shadow, {
+            childList: true, characterData: true, subtree: true,
+          });
+          observedLabels.add(shadow);
+        }
+        return ["Ad", "Sponsored"].includes(shadow.textContent.replace(/[\u200B-\u200D\u2060\uFEFF]/g, "").trim());
+      },
+    );
     const isSuggested = [...post.querySelectorAll("span")].some(
       (span) =>
         span.textContent.trim() === "Suggested for you" &&
@@ -24,7 +40,7 @@ function hideFeedPosts(root, pathname = location.pathname) {
         ["Join", "Follow"].includes(button.textContent.trim()),
       );
 
-    if (isSuggested || isFromUnfollowedSource) post.classList.add(HIDDEN_CLASS);
+    if (isSponsored || isSuggested || isFromUnfollowedSource) post.classList.add(HIDDEN_CLASS);
   }
 }
 
